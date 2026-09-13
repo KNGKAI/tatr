@@ -354,7 +354,7 @@ bool ls_run(Command *self, const char *program_name, int argc, char **argv)
         case TMR_ERROR:      return false;
         default:             UNREACHABLE("Task_Match_Result");
         }
-        print_task(dir_path, task);
+        print_task_report(dir_path, task);
         tasks_matched += 1;
     }
 
@@ -433,7 +433,7 @@ bool new_run(Command *self, const char *program_name, int argc, char **argv)
     const char *task_md_path = temp_sprintf("%s/%s/TASK.md", dir_path, id);
     if (!write_entire_file(task_md_path, sb_md_content.items, sb_md_content.count)) return false;
 
-    print_task(dir_path, &task);
+    print_task_report(dir_path, &task);
     return true;
 }
 
@@ -497,7 +497,7 @@ bool find_run(Command *self, const char *program_name, int argc, char **argv)
             if (path_only) {
                 printf("%s/%s/TASK.md\n", dir_path, task->id);
             } else {
-                print_task(dir_path, task);
+                print_task_report(dir_path, task);
             }
             found = true;
         }

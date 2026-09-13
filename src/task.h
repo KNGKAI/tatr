@@ -35,7 +35,7 @@ typedef struct {
     String_View task_md_content;
 } Task;
 
-void print_task(const char *rel_path, Task *task);
+void print_task_report(const char *rel_path, Task *task);
 void append_task_md_content(String_Builder *sb, Task task);
 
 typedef struct {

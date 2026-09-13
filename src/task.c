@@ -43,7 +43,7 @@ void append_task_md_content(String_Builder *sb, Task task)
     sb_appendf(sb, "No description.\n");
 }
 
-void print_task(const char *rel_path, Task *task)
+void print_task_report(const char *rel_path, Task *task)
 {
     printf("%s/%s/TASK.md:1:", rel_path, task->id); // Location
     printf(" "SV_Fmt, SV_Arg(task->status));        // Status
