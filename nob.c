@@ -270,9 +270,9 @@ void cc(Cmd *cmd, Compiler compiler)
 const char *get_current_date(void)
 {
     static const char *WEEKDAYS[] = {
-        "Sun", "Tue", "Wed",
-        "Thu", "Fri", "Sat",
-        "Mon",
+        "Sun", "Mon", "Tue",
+        "Wed", "Thu", "Fri",
+        "Sat",
     };
 
     static const char *MONTHS[] = {
