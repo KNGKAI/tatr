@@ -27,3 +27,7 @@ I just realized that TQL expression like `20260912-125818 or 20260912-125912` wi
 ---
 
 Because of that `tatr ls 20260912-125818` and `tatr find 20260912-125818` become equivalent which turns `tatr-find` kind obsolete.
+
+---
+
+Actually they are not equivalent. `tatr-find` will also give you closed tasks, while `tatr-ls` requires `-c` flag for that.
