@@ -305,7 +305,6 @@ int main(int argc, char **argv)
 {
     GO_REBUILD_URSELF(argc, argv);
     Cmd cmd = {0};
-    Procs procs = {0};
 
     bool test = false;
     bool run = false;
@@ -328,7 +327,7 @@ int main(int argc, char **argv)
     Compiler compiler;
     if (!compiler_by_name(compiler_name, &compiler)) {
         nob_log(ERROR, "Unknown compiler \"%s\"", compiler_name);
-        nob_log(ERROR, "Supported compilers:", compiler_name);
+        nob_log(ERROR, "Supported compilers:");
         for (int i = 0; i < __compiler_count; ++i) {
             nob_log(ERROR, "  %s", compiler_names[i]);
         }
@@ -396,7 +395,7 @@ bool make_build_h(Compiler compiler)
         sb_appendf(&sb_build_h, "#define GIT_HASH \"");
         if (!read_entire_file(BUILD_FOLDER"git_hash.txt", &sb_build_h)) return false;
         while (sb_build_h.count > 0 && isspace(da_last(&sb_build_h))) {
-            da_pop(&sb_build_h);
+            UNUSED(da_pop(&sb_build_h));
         }
         sb_appendf(&sb_build_h, "\"\n");
     } else {
