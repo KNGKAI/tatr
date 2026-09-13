@@ -26,6 +26,7 @@ typedef enum {
     OP_OR,
     OP_AND,
     OP_TAGGED,
+    OP_ID,
     OP_PRIORITY,
     OP_INTEGER,
     OP_LT,
@@ -40,6 +41,7 @@ typedef struct {
     Op_Kind kind;
     union {
         String_View tag;
+        String_View id;
         long integer;
     } as;
     String_View src;
@@ -49,10 +51,12 @@ void print_op(Op op);
 
 Op op(Op_Kind kind, String_View src);
 Op op_set_tag(Op op, String_View tag);
+Op op_set_id(Op op, String_View id);
 Op op_set_integer(Op op, long integer);
 
 #define op_tag(src, tag)         op_set_tag(op(OP_TAG, (src)), (tag))
 #define op_integer(src, integer) op_set_integer(op(OP_INTEGER, (src)), (integer))
+#define op_id(src, id)           op_set_id(op(OP_ID, (src)), (id))
 #define op_not(src)              op(OP_NOT, (src))
 #define op_any(src)              op(OP_ANY, (src))
 #define op_tagged(src)           op(OP_TAGGED, (src))

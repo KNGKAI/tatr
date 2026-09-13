@@ -152,8 +152,12 @@ Here is the [Backus–Naur form](https://en.wikipedia.org/wiki/Backus%E2%80%93Na
                     | 'tagged'
                     | 'priority'
                     | <number>
+                    | <huid>
 <tag>             ::= ':' 1*<any-character-except-whitespaces-and-square-brackets>
 <number>          ::= ['-'] 1*<digit>
+<huid>            ::= 8<digit> '-' 6<digit> [ '-' [ <huid-suffix> ] ]
+<huid-suffix>     ::= 'A'-'Z' | 'a'-'z' | '-' | <digit>
+<digit>           ::= '0'-'9'
 ```
 
 The syntax is designed to be used in shell environment without requiring any special escaping.
@@ -173,6 +177,7 @@ Since brackets have a special meaning in TQL, if you have any tags that contain 
 | `:<tag>` | True when a task's `TAGS` property contains `<tag>`. |
 | `not <expr>` | True when `<expr>` is false. |
 | `tagged` | True when a task has at least one tag in its `TAGS` property. |
+| `<huid>` | True when a task has id equal to `<huid>` |
 | `any` | Always true for any task. |
 | `priority` | Priority of the task as an integer. |
 | `<a> lt <b>` | True when `<a>` is less than `<b>`.|

@@ -1,8 +1,8 @@
 # TQL expression that matches a task with a specific ID
 
-- STATUS: OPEN
+- STATUS: CLOSED
 - PRIORITY: 110
-- TAGS: scope,tql
+- TAGS: tql
 
 Extracted from 20260828-211200
 

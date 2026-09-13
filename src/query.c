@@ -46,6 +46,7 @@ void print_op(Op op)
     case OP_OR:       printf("OP_OR\n");                              break;
     case OP_AND:      printf("OP_AND\n");                             break;
     case OP_TAGGED:   printf("OP_TAGGED\n");                          break;
+    case OP_ID:       printf("OP_ID\n");                              break;
     case OP_PRIORITY: printf("OP_PRIORITY\n");                        break;
     case OP_INTEGER:  printf("OP_INTEGER %ld\n", op.as.integer);      break;
     case OP_LT:       printf("OP_LT\n");                              break;
@@ -98,6 +99,9 @@ Task_Match_Result task_matches_query(String_View original_src, const Task *task,
             if (!pop_type(original_src, stack, TYPE_BOOLEAN, &a)) return TMR_ERROR;
             if (!pop_type(original_src, stack, TYPE_BOOLEAN, &b)) return TMR_ERROR;
             da_append(stack, stack_bool(op->src, a.as.boolean && b.as.boolean));
+        } break;
+        case OP_ID: {
+            da_append(stack, stack_bool(op->src, sv_eq(sv_from_cstr(task->id), op->as.id)));
         } break;
         case OP_TAGGED: {
             da_append(stack, stack_bool(op->src, task->tags.count > 0));
@@ -232,6 +236,11 @@ bool compile_query_primary(String_View original_src, String_View *src, Query *qu
         return true;
     }
 
+    if (is_valid_huid(temp_sv_to_cstr(token))) {
+        da_append(query, op_id(token, token));
+        return true;
+    }
+
     size_t checkpoint = temp_save();
     char *endptr      = NULL;
     const char *nptr  = temp_sv_to_cstr(token);
@@ -252,6 +261,7 @@ bool compile_query_primary(String_View original_src, String_View *src, Query *qu
     fprintf(stderr, "    tagged         - checks if a task is tagged\n");
     fprintf(stderr, "    priority       - priority of a task as an integer\n");
     fprintf(stderr, "    <number>       - signed integer\n");
+    fprintf(stderr, "    <huid>         - valid id of a task\n");
     fprintf(stderr, "\n");
     if (token.count == 0) {
         report_compile_query_diagnostic(original_src, token, "ERROR: Primary expression is expected here.");
@@ -398,6 +408,12 @@ Op op(Op_Kind kind, String_View src)
 Op op_set_tag(Op op, String_View tag)
 {
     op.as.tag = tag;
+    return op;
+}
+
+Op op_set_id(Op op, String_View id)
+{
+    op.as.id = id;
     return op;
 }
 
