@@ -270,9 +270,9 @@ void cc(Cmd *cmd, Compiler compiler)
 const char *get_current_date(void)
 {
     static const char *WEEKDAYS[] = {
-        "Mon", "Tue", "Wed",
+        "Sun", "Tue", "Wed",
         "Thu", "Fri", "Sat",
-        "Sun",
+        "Mon",
     };
 
     static const char *MONTHS[] = {
@@ -287,7 +287,7 @@ const char *get_current_date(void)
     struct tm *timeinfo = localtime(&rawtime);
 
     String_Builder sb = {0};
-    sb_appendf(&sb, "%s, ",  WEEKDAYS[timeinfo->tm_wday - 1]);
+    sb_appendf(&sb, "%s, ",  WEEKDAYS[timeinfo->tm_wday]);
     sb_appendf(&sb, "%02d ", timeinfo->tm_mday);
     sb_appendf(&sb, "%s ",   MONTHS[timeinfo->tm_mon]);
     sb_appendf(&sb, "%04d ", timeinfo->tm_year+1900);
