@@ -287,9 +287,9 @@ const char *get_current_date(void)
     struct tm *timeinfo = localtime(&rawtime);
 
     String_Builder sb = {0};
-    sb_appendf(&sb, "%s, ",  WEEKDAYS[timeinfo->tm_wday]);
+    sb_appendf(&sb, "%s, ",  ARRAY_GET(WEEKDAYS, timeinfo->tm_wday));
     sb_appendf(&sb, "%02d ", timeinfo->tm_mday);
-    sb_appendf(&sb, "%s ",   MONTHS[timeinfo->tm_mon]);
+    sb_appendf(&sb, "%s ",   ARRAY_GET(MONTHS, timeinfo->tm_mon));
     sb_appendf(&sb, "%04d ", timeinfo->tm_year+1900);
     sb_appendf(&sb, "%02d:", timeinfo->tm_hour);
     sb_appendf(&sb, "%02d:", timeinfo->tm_min);
