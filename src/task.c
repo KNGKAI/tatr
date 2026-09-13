@@ -23,6 +23,7 @@ bool tags_contains(Tags tags, String_View tag)
     return false;
 }
 
+// TASK(20260913-063421): `append_task_md_content()` doesn't take into account `Task.body`
 void append_task_md_content(String_Builder *sb, Task task)
 {
     sb_appendf(sb, "# "SV_Fmt"\n", SV_Arg(task.title));
