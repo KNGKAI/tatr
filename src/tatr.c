@@ -265,6 +265,139 @@ bool untag_run(Command *self, const char *program_name, int argc, char **argv)
     return true;
 }
 
+bool update_run(Command *self, const char *program_name, int argc, char **argv)
+{
+    String_Builder query_src = {0};
+    Flag_List tags_to_add = {0};
+    char *status = NULL;
+    char *priority_str = NULL;
+    bool help = false;
+    bool closed = false;
+
+    void *c = flag_c_new(program_name);
+    flag_c_str_var(c, &status, "s", NULL, "Status to set (OPEN or CLOSED)");
+    flag_c_str_var(c, &priority_str, "p", NULL, "Priority to set");
+    flag_c_list_var(c, &tags_to_add, "t", "Tags to add to the tasks");
+    flag_c_bool_var(c, &closed, "c", false, "Update closed tasks");
+    flag_c_bool_var(c, &help, "help", false, "Print this help message");
+
+    if (!flag_c_parse(c, argc, argv)) {
+        print_command_usage(self, program_name, c);
+        flag_c_print_error(c, stderr);
+        return false;
+    }
+
+    argc = flag_c_rest_argc(c);
+    argv = flag_c_rest_argv(c);
+
+    if (help) {
+        print_command_usage(self, program_name, c);
+        return true;
+    }
+
+    if (status == NULL && priority_str == NULL && tags_to_add.count == 0) {
+        print_command_usage(self, program_name, c);
+        nob_log(ERROR, "No fields to update. Provide -s, -p, and/or -t");
+        return false;
+    }
+
+    if (status != NULL) {
+        if (!sv_eq(sv_from_cstr(status), SVLIT("OPEN")) &&
+            !sv_eq(sv_from_cstr(status), SVLIT("CLOSED"))) {
+            print_command_usage(self, program_name, c);
+            nob_log(ERROR, "`%s` is not a valid status. Expected OPEN or CLOSED", status);
+            return false;
+        }
+    }
+
+    bool set_priority = false;
+    int priority = 0;
+    if (priority_str != NULL) {
+        char *endptr = NULL;
+        long integer = strtol(priority_str, &endptr, 10);
+        if (priority_str >= endptr || *endptr != '\0') {
+            print_command_usage(self, program_name, c);
+            nob_log(ERROR, "`%s` is not a valid priority", priority_str);
+            return false;
+        }
+        priority = (int)integer;
+        set_priority = true;
+    }
+
+    if (argc <= 0) {
+        fprintf(stderr, "ERROR: no query is provided\n");
+        return false;
+    }
+
+    while (argc > 0) {
+        if (query_src.count > 0) sb_append(&query_src, ' ');
+        sb_append_cstr(&query_src, shift(argv, argc));
+    }
+
+    String_View src = sv_trim(sb_to_sv(query_src));
+    String_View original_src = src;
+    Query query = {0};
+    if (!compile_query(original_src, &src, &query)) return false;
+
+    Tags incoming_tags = {0};
+    da_foreach(const char *, tag, &tags_to_add) {
+        parse_tags(&incoming_tags, sv_from_cstr(*tag));
+    }
+
+    char *dir_path = find_relative_tasks_directory();
+    if (!dir_path) return false;
+
+    Tasks tasks = {0};
+    if (!load_tasks(&tasks, dir_path)) return false;
+
+    Stack stack = {0};
+
+    size_t tasks_updated = 0;
+    da_foreach(Task, task, &tasks) {
+        if (closed) {
+            if (!sv_eq(task->status, SVLIT("CLOSED"))) continue;
+        } else {
+            if (sv_eq(task->status, SVLIT("CLOSED"))) continue;
+        }
+        switch (task_matches_query(original_src, task, query, &stack)) {
+        case TMR_MATCHED:    break;
+        case TMR_MISMATCHED: continue;
+        case TMR_ERROR:      return false;
+        default:             UNREACHABLE("Task_Match_Result");
+        }
+
+        bool updated = false;
+        if (status != NULL && !sv_eq(task->status, sv_from_cstr(status))) {
+            task->status = sv_from_cstr(status);
+            updated = true;
+        }
+        if (set_priority && task->priority != priority) {
+            task->priority = priority;
+            updated = true;
+        }
+        da_foreach(String_View, tag, &incoming_tags) {
+            if (!tags_contains(task->tags, *tag)) {
+                da_append(&task->tags, *tag);
+                updated = true;
+            }
+        }
+
+        if (updated) {
+            String_Builder sb = {0};
+            render_task_md(*task, &sb);
+            if (!write_entire_file(temp_sprintf("%s/%s/TASK.md", dir_path, task->id), sb.items, sb.count)) {
+                return false;
+            }
+            print_task_report(dir_path, task);
+            tasks_updated += 1;
+        }
+    }
+
+    nob_log(INFO, "%zu tasks updated", tasks_updated);
+
+    return true;
+}
+
 bool ls_run(Command *self, const char *program_name, int argc, char **argv)
 {
     bool closed = false;
@@ -864,6 +997,12 @@ Command commands[] = {
         .description = "Untag all the tasks filtered by a query",
         .signature = "[OPTIONS] [QUERY]",
         .run = untag_run,
+    },
+    {
+        .name = "update",
+        .description = "Update tasks filtered by a query",
+        .signature = "[OPTIONS] [QUERY...]",
+        .run = update_run,
     },
     {
         .name = "help",

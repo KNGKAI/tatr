@@ -101,6 +101,8 @@ $ tatr help
 
 It is specifically optimized to be run in compilation mode of Emacs. Not sure how useful it is outside of this use case.
 
+`tatr update` patches matching tasks with flags: `-s` status (`OPEN` or `CLOSED`), `-p` priority, `-t` tags (adds, does not replace). Rest arguments are a TQL query. Default is open tasks; pass `-c` to update closed ones.
+
 We only support Linux right now But I have tasks to add [Windows](./tasks/20260825-170729/TASK.md) and [MacOS](./tasks/20260901-063204/TASK.md) support in the future.
 
 You are welcome to make your own tools.
